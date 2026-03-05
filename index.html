@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andrew Flierman — Builder, Breaker, Teammate</title>
+  <meta name="description" content="Andrew Flierman builds infrastructure, ships AI-powered tools, and writes docs people actually read.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0F0F0F;
+      --bg-raised: #1A1A1A;
+      --bg-card: #1E1E1E;
+      --text: #E8E8E8;
+      --text-mid: #A0A0A0;
+      --text-dim: #6B6B6B;
+      --accent: #7AC6EF;
+      --accent-glow: rgba(122, 198, 239, 0.15);
+      --accent-hover: #5DB8E8;
+      --border: #2A2A2A;
+      --border-hover: #3A3A3A;
+      --radius: 12px;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+    }
+
+    /* ---- Scroll Animations ---- */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* stagger children */
+    .stagger > .fade-up:nth-child(1) { transition-delay: 0s; }
+    .stagger > .fade-up:nth-child(2) { transition-delay: 0.1s; }
+    .stagger > .fade-up:nth-child(3) { transition-delay: 0.2s; }
+    .stagger > .fade-up:nth-child(4) { transition-delay: 0.3s; }
+    .stagger > .fade-up:nth-child(5) { transition-delay: 0.4s; }
+
+    /* ---- Hero ---- */
+    .hero {
+      padding: 6rem 0 4rem;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+      margin: 0 auto 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.25rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      user-select: none;
+      transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+    }
+
+    .avatar:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+      transform: scale(1.05);
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .tagline {
+      font-size: 1.25rem;
+      color: var(--text-mid);
+      max-width: 520px;
+      margin: 0 auto 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* ---- Divider ---- */
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin: 0 auto 3rem;
+      opacity: 0.6;
+    }
+
+    /* ---- Doors ---- */
+    .doors {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding-bottom: 4rem;
+    }
+
+    .door {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .door:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .door.open {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .door-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      user-select: none;
+      background: none;
+      border: none;
+      width: 100%;
+      font: inherit;
+      color: inherit;
+      text-align: left;
+      transition: background 0.2s ease;
+    }
+
+    .door-header:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .door-header:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+      border-radius: var(--radius);
+    }
+
+    .door-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      letter-spacing: -0.01em;
+    }
+
+    .door-title .icon {
+      font-size: 1.1rem;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-glow);
+      border-radius: 8px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .door-arrow {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .door.open .door-arrow {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+
+    .door-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s ease;
+      padding: 0 1.5rem;
+    }
+
+    .door.open .door-content {
+      max-height: 700px;
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    .door-content p {
+      margin-bottom: 0.75rem;
+      color: var(--text-mid);
+      line-height: 1.7;
+    }
+
+    .door-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ---- Focus Cards ---- */
+    .focus-areas {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .focus-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.125rem 1.25rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .focus-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .focus-card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .focus-card p {
+      font-size: 0.9rem;
+      margin-bottom: 0;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ---- Work Style ---- */
+    .work-style {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .work-style .quip {
+      font-size: 0.95rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-mid);
+      line-height: 1.6;
+    }
+
+    .work-style .quip:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .work-style .quip:first-child {
+      padding-top: 0;
+    }
+
+    /* ---- Contact Links ---- */
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .contact-link-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .contact-link-row a {
+      font-weight: 500;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .contact-link-row a .arrow {
+      display: inline-block;
+      transition: transform 0.2s ease;
+      font-size: 0.85rem;
+    }
+
+    .contact-link-row a:hover .arrow {
+      transform: translateX(3px);
+    }
+
+    .contact-link-row .link-sub {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* ---- Footer ---- */
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 2rem 1rem 3rem;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ---- Responsive ---- */
+    @media (min-width: 480px) {
+      .hero {
+        padding: 8rem 0 4.5rem;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+      }
+
+      .avatar {
+        width: 130px;
+        height: 130px;
+        font-size: 2.75rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .hero h1 {
+        font-size: 2.25rem;
+      }
+
+      .tagline {
+        font-size: 1.05rem;
+      }
+
+      .door-header {
+        padding: 1rem 1.125rem;
+      }
+
+      .door-content,
+      .door.open .door-content {
+        padding-left: 1.125rem;
+        padding-right: 1.125rem;
+      }
+    }
+
+    /* ---- Reduced motion ---- */
+    @media (prefers-reduced-motion: reduce) {
+      .fade-up {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="avatar fade-up" title="Photo coming soon — imagine someone who looks like they'd be fun at a standup">
+        AF
+      </div>
+      <h1 class="fade-up">Andrew Flierman</h1>
+      <p class="tagline fade-up">I build things, break things, and make the team laugh while doing both.</p>
+      <p class="subtitle fade-up">DevOps &middot; AI &middot; Full-Stack</p>
+    </section>
+
+    <div class="divider fade-up"></div>
+
+    <!-- Doors -->
+    <section class="doors stagger" aria-label="About Andrew">
+
+      <!-- Door 1: What I'm building -->
+      <div class="door fade-up">
+        <button class="door-header" aria-expanded="false" onclick="toggleDoor(this)">
+          <span class="door-title"><span class="icon">&#9881;</span> What I'm building</span>
+          <span class="door-arrow">&#9660;</span>
+        </button>
+        <div class="door-content">
+          <div class="focus-areas">
+            <div class="focus-card">
+              <h3>DevOps &amp; Infrastructure</h3>
+              <p>Pipelines that don't page you at 3 AM. Cloud infra that scales without drama. The kind of boring reliability that lets everyone else sleep well.</p>
+            </div>
+            <div class="focus-card">
+              <h3>AI &amp; ML</h3>
+              <p>Putting language models to work on real problems — not just demos that impress VCs. Agents, tooling, and workflows that actually ship.</p>
+            </div>
+            <div class="focus-card">
+              <h3>Full-Stack Apps</h3>
+              <p>End-to-end product work, from database schema arguments to pixel-nudging CSS. Yes, I do both. No, I don't pick favorites.</p>
+            </div>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.9rem;">
+            See what I've been up to
+            <a href="https://github.com/andrewflierman" target="_blank" rel="noopener">github.com/andrewflierman <span class="arrow">&rarr;</span></a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Door 2: How I work -->
+      <div class="door fade-up">
+        <button class="door-header" aria-expanded="false" onclick="toggleDoor(this)">
+          <span class="door-title"><span class="icon">&#9994;</span> How I work</span>
+          <span class="door-arrow">&#9660;</span>
+        </button>
+        <div class="door-content">
+          <div class="work-style">
+            <p class="quip">I'm the person who cracks a joke when prod is on fire — then fixes it before the coffee gets cold.</p>
+            <p class="quip">I write docs that people actually read. Mostly because they're mildly entertaining.</p>
+            <p class="quip">I ask "why" a lot. Not to be difficult — because the second answer is usually better than the first.</p>
+            <p class="quip">I pair well with others. Think of me as a senior engineer who also doubles as team morale infrastructure.</p>
+            <p class="quip">I ship incrementally, communicate early, and treat "it works on my machine" as a bug, not a defense.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Door 3: Let's talk -->
+      <div class="door fade-up">
+        <button class="door-header" aria-expanded="false" onclick="toggleDoor(this)">
+          <span class="door-title"><span class="icon">&#9993;</span> Let's talk</span>
+          <span class="door-arrow">&#9660;</span>
+        </button>
+        <div class="door-content">
+          <p>I'm always up for a good conversation about engineering, product, or whether tabs vs. spaces actually matters. (It doesn't. But I have opinions.)</p>
+          <div class="contact-links">
+            <div class="contact-link-row">
+              <a href="mailto:your@email.com">your@email.com <span class="arrow">&rarr;</span></a>
+              <span class="link-sub">swap this with your real email</span>
+            </div>
+            <div class="contact-link-row">
+              <a href="https://github.com/andrewflierman" target="_blank" rel="noopener">GitHub <span class="arrow">&rarr;</span></a>
+              <span class="link-sub">where the code lives</span>
+            </div>
+            <div class="contact-link-row">
+              <a href="https://linkedin.com/in/andrewflierman" target="_blank" rel="noopener">LinkedIn <span class="arrow">&rarr;</span></a>
+              <span class="link-sub">the professional one</span>
+            </div>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-dim);">More links coming soon. I'm pacing myself.</p>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <footer>
+    Handcrafted with mass-produced electrons. No frameworks were harmed in the making of this page.
+  </footer>
+
+  <script>
+    function toggleDoor(button) {
+      const door = button.parentElement;
+      const isOpen = door.classList.toggle('open');
+      button.setAttribute('aria-expanded', isOpen);
+    }
+
+    // Scroll-triggered fade-in
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
